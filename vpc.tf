@@ -1,93 +1,65 @@
-resource "aws_vpc" "vpc1" {
-    cidr_block = "10.0.0.0/16"
+resource "aws_vpc" "vpc" {
+    cidr_block = var.vpc_cidr
     tags = {
-        Name = "vpc1"
+        Name = "vpc"
     }
 }
 
-resource "aws_subnet" "sub-1" {
-    availability_zone = "ap-south-1a"
-    cidr_block = "10.0.0.0/20"
+resource "aws_subnet" "subnet" {
+    availability_zone = var.az
+    cidr_block = var.subnet_cidr
     map_public_ip_on_launch = "true"
-    vpc_id = aws_vpc.vpc1.id
+    vpc_id = aws_vpc.vpc.id
     tags = {
-        Name = "sub-1"
-    }
-}
-resource "aws_subnet" "sub-2" {
-    availability_zone = "ap-south-1b"
-    cidr_block = "10.0.16.0/20"
-    map_public_ip_on_launch = "true"
-    vpc_id = aws_vpc.vpc1.id
-    tags = {
-        Name = "sub-2"
-    }
-}
-resource "aws_subnet" "sub-3" {
-    availability_zone = "ap-south-1c"
-    cidr_block = "10.0.32.0/20"
-    map_public_ip_on_launch = "true"
-    vpc_id = aws_vpc.vpc1.id
-    tags = {
-        Name = "sub-3"
+        Name = "subnet"
     }
 }
 
-resource "aws_internet_gateway" "ig" {
-    vpc_id = aws_vpc.vpc1.id
+resource "aws_internet_gateway" "internet-gateway" {
+    vpc_id = aws_vpc.vpc.id
     tags = {
-        Name = "ig"
+        Name = "internet-gateway"
     }
 }
 
-resource "aws_route_table" "new-rt" {
-    vpc_id = aws_vpc.vpc1.id
+resource "aws_route_table" "route-table" {
+    vpc_id = aws_vpc.vpc.id
     route {
-        cidr_block = "0.0.0.0/0"
-        gateway_id = aws_internet_gateway.ig.id
+        cidr_block = var.open_cidr
+        gateway_id = aws_internet_gateway.internet-gateway.id
     }
     tags = {
-        Name = "new-rt"
+        Name = "route-table"
     }
 }
 
-resource "aws_route_table_association" "a1" {
-  subnet_id      = aws_subnet.sub-1.id
-  route_table_id = aws_route_table.new-rt.id
+resource "aws_route_table_association" "asscociation" {
+  subnet_id      = aws_subnet.subnet.id
+  route_table_id = aws_route_table.route-table.id
 }
 
-resource "aws_route_table_association" "a2" {
-  subnet_id      = aws_subnet.sub-2.id
-  route_table_id = aws_route_table.new-rt.id
-}
-
-resource "aws_route_table_association" "a3" {
-  subnet_id      = aws_subnet.sub-3.id
-  route_table_id = aws_route_table.new-rt.id
-}
-
-resource "aws_security_group" "secgroup" {
-    name = "secgroup"
-    vpc_id = aws_vpc.vpc1.id
+resource "aws_security_group" "es_security" {
+    name = "es_security"
+    vpc_id = aws_vpc.vpc.id
     ingress {
         from_port = 9200
         to_port = 9300
         protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
+        cidr_blocks = ["${var.open_cidr}"]
     }
     ingress {
         from_port = 22
         to_port = 22
         protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
+        cidr_blocks = ["${var.open_cidr}"]
     }
     egress {
         from_port = 0
         to_port = 0
         protocol = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
+        cidr_blocks = ["${var.open_cidr}"]
     }
     tags = {
-        Name = "secgroup"
+        Name = "es-security"
     }
 }
