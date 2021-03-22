@@ -13,7 +13,7 @@
 **vpc.tf** :
       - Created VPC, Subnet, Internet Gateway, Route Table, Security Group
       
-1.What did you choose to automate the provisioning and bootstrapping of the instance? Why? 
+1. What did you choose to automate the provisioning and bootstrapping of the instance? Why? 
 - Used remote-exec to do the bootstrapping, Remote-exec executes shell script into the instance by remotely taking ssh and runs the script.
 2. How did you choose to secure ElasticSearch? Why?
 - ELasticsearch is secured by two ways, a. It is configured using username and password to login and b. Used TLS to ensure that communication between HTTP clients and the cluster is encrypted
